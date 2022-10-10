@@ -50,3 +50,10 @@ class Doctor():
         self.__consecutive_shifts = 0
         self.__history = []
         self.__shift_count = 0
+
+    def is_valid(self, priority_factor, selected):
+        if self.__consecutive_shifts < 2 and self._priority_factor == priority_factor:
+            if self not in selected:
+                return True
+        else:
+            return False

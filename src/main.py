@@ -1,11 +1,14 @@
 
 from entities.shift import Shift
-from business.doctors_list_generator import list_generator, default_list, random_list
+from business.import_data import import_data
+from business.shift_generator import multi_shift_generator
 
-# doctors = list_generator(16, 10) ## lista que pergunta nomes/disponibilidade
-# doctors = random_list(2, 10, 7, 7) ## lista com nomes padrao e disponibilidade aleatoria para testes 
-doctors = default_list() ## Lista com nomes e disponibilidade padrao para aprimoramento
+def main():
+    resultados = import_data("escala_plantao.xlsx")
 
-outubro = Shift('Outubro', 10, doctors, 4, 1)
+    plantao = Shift(resultados[0], resultados[1], resultados[2], resultados[3], resultados[4], resultados[5])
 
-outubro.best_shift(1000)
+    multi_shift_generator(plantao, resultados[6])
+
+if __name__=="__main__":
+    main()
