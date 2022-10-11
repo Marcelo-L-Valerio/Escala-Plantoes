@@ -6,18 +6,32 @@
 
 ### Tendo os médicos, seus dias disponíveis, e a quantidade de medicos necessaria por dia, gera a escala da semana/mês, priorizando a/as opções com menor desvio padrão dentre um numero pre estabelecido de iterações, levando em conta também se todos os plantões estão preenchidos
 
-### O objetivo desse código, e o desafio que me impus para o mesmo, é o de não usar nenhum framework ou aplicação de banco de dados/requisições, pois o ideal é esse código rodar num PC privado, e baixando o menor numero de programas possível, neste caso me restringi tambem ao uso de bibliotecas, para não precisar criar um ambiente virtual nem nada, apenas baixar e rodar
+## Regras de negócio:
 
-### No arquivo main.py, existem 3 tipos de listas de médicos que podem ser utilizadas: uma interativa, que pedirá os dados de cada médico no terminal, uma aleatória, que gerará uma lista de acordo com os parâmetros pedidos, e uma lista padrão, utilizada para comparar resultados e melhorias para um caso especifico de 10 dias (5 finais de semana)
+### - Um médico não pode fazer plantões de 36 horas (dia-noite-dia consecutivos, por exemplo).
+### - Idealmente, o melhor turno é aquele no qual o numero de turnos de todos os médicos é igual.
+### - Se não for possível preencher todas as vagas de plantão, o melhor plantão deve obrigatóriamente conter o maior numero possível de vagas ocupadas, mesmo que isso deixe a distribuição desigual.
+### - Deve ter a opção de escolher entre turnos diários e noturnos, ou apenas diários.
+### - A usabilidade do software deve ser simples, podendo rodar em qualquer máquina, com o mínimo de programas auxiliares possiveis, entretanto, preferencialmente utilizando excel.
 
-### A lógica do programa funciona da seguinte maneira: primeiro é preciso criar uma lista de objetos da classe médicos, utilizando as funções criadas para isso;
+## Para rodar o código:
 
-### Após isso, deve criar o turno (shift), dando como parâmetros o mês/semana/período, o número de dias do período (utilizar o mesmo que usou para criar a disponibilidade dos médicos), a própria lista de médicos, numero de médicos de dia, e número de médicos de noite (pode ser 0);
+### Para rodar o código, há duas opções; a primeira é colocar o arquivo do excel como o do exemplo dado preenchido dentro da pasta do código (pode ser no mesmo nível que a pasta src), ou é possível pegar apenas o arquivo .exe (dentro de dist), e rodá-lo numa pasta com a planilha excel preenchida (nos dois casos, necessariamente a planilha deve chamar "escala_plantao.xlsx).
 
-### Após chamar o método best_shift da classe shift, com o número de interações desejadas, a lista de médicos passa por uma série de filtros e classificações: no primeiro filtro, são colocados nas listas "available" apenas os médicos disponíveis na data;
+### Simples assim, surgirá um novo arquivo excel na pasta, chamado Turnos.xlsx, que terá uma opção de turno em cada aba, de acordo com o número de opções solicitado. Além disso, o resultado aparecerá no terminal.
 
-### Então, essa lista é passada pelo método priorizador, que levará em consideração quantos dias o médico ainda tem disponível, quantos plantões o médico ja fez, e quantos plantões seria o ideal para que todos os médicos tivessem o mesmo numero de plantões
+### Instruções de preenchimento da planilha na primeira aba da mesma - é recomendado manter o arquivo original como exemplo e utilizar cópias do mesmo.
 
-### No método seletor, o primeiro passo é embaralhar a lista de disponíveis, isso é feito para que qualquer vício do programa seja desfeito, e após 1000 iterações, a chance de ter achado o melhor plantão aumente, pois o seletor leva em conta apenas 2 fatores: se o médico tem um número de prioridade que é o máximo da lista, e ainda se ele não está fazendo dois plantões consecutivos;
+## Funcionamento do código - encadeamento de funções
 
-### Por ultimo, o best_shift printará no terminal uma das iterações que teve o menor desvio padrão, retornando também uma lista com o nome do médico e o numero de turnos dele
+### Para a utilização simplificada desse software, o mesmo foi integrado com uma planilha de excel, de onde vem o input de dados. A mesma está documentada de tal modo que qualquer um possa utilizala, sabendo apenas o mínimo de excel, e o programa tem uma versão .exe para que o mesmo seja utilizado em maquinas pessoais, sem a necessidade de instalação de qualquer recurso adicional
+
+### O software pega os dados fornecidos pela planilha, como numero de opções de turnos, nome, disponibilidade dos médicos, os formata para a correta utilização, e então chama uma serie de funções: a primeira, import data, que em conjunto com a excel list, irá gerar uma lista de objetos Médicos, com as respectivas disponibilidades e nomes, que são então passados como argumentos a seguir:
+
+### Primeiro a função passa pelo availability_filter, que, dado um dia, irá retornar os médicos que têm, em sua disponibilidade, o dia em questão. Depois disso, os disponíves passam pelo priorizer, que levará em consideração quantos dias o médico ainda tem disponível, quantos plantões o médico ja fez, e quantos plantões seria o ideal para que todos os médicos tivessem o mesmo numero de plantões.
+
+### O resultado ainda passa pelo seletor, que fará uma serie de validações para averiguar que o médico escolhido é realmente válido para o dia iterado. Esse método, antes de tudo, embaralha a lista, para garantir que cada iteração, dentro do possível, seja diferente da anterior, e então aumentar as chances de encontrar o plantão perfeito.
+
+### A função create_shift é responsável por pegar os médicos selecionados e colocá-los em uma lista de modo que possam ser manipulados. Além disso, ela utiliza o metodo setup no inicio de cada criação, e no final de cada dia realiza a zeragem dos plantões consecutivos daqueles que não realizaram plantões no dia em questão.
+
+### A função multi_shift_generator ira auxiliar na impressão dos resultados de maneira organizada no terminal, além de converter os resultados obtidos em um novo arquivo excel, que salvará em abas diferentes as tabelas com as opções de turno geradas, de acordo com um numero estabelecido. Além disso, ela chama o método best_shift, que gerará 1000 iterações de criação de turno, para escolher as que obtiverem o menor numero de plantões preenchidos, e melhor desvio padrão, e printar uma das opções. A função print_shift é uma função auxiliar que formata os dados do turno em um DataFrame Pandas, e o printa no terminal

@@ -12,3 +12,12 @@ def main():
 
 if __name__=="__main__":
     main()
+
+# # test input
+
+# from business.doctors_list_generator import random_list
+# dias = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+# lista_medicos = random_list(10, dias, 7, 7)
+# n_opcoes = 5
+# plantao = Shift('fds_outubro', dias, lista_medicos, 4, 1, 'hospital teste')
+# multi_shift_generator(plantao, n_opcoes)

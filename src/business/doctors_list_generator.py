@@ -47,10 +47,3 @@ def excel_list(nome_planilha:str):
         lista_medicos.append(Doctor(nome, dias_disponivel, noites_disponivel))
 
     return lista_medicos, dias
-
-
-# # test input
-# dias = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-# lista_medicos = random_list(10, 10, 7, 7)
-# n_opcoes = 5
-# plantao = Shift('fds_outubro', dias, lista_medicos, 4, 1)

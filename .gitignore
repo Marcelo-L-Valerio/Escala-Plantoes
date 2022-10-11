@@ -1,5 +1,4 @@
 .vscode
-dist
 cria_escala.py
 Turnos.xlsx
 __pycache__

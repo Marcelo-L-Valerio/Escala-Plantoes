@@ -14,15 +14,18 @@ class Shift():
         self.doctors_per_night: int = doctors_per_night
         self.local: str = local
 
-    def availability_filter(self, day):
+    def availability_filter(self, day, shift_type):
         '''Metodo interno que, tendo o dia pedido, filtra na lista de médicos
         da classe apenas os que tenham o dia disponível'''
 
         available = [doctor for doctor in self.doctors if day in doctor.availability]
 
-        night_avaible = [doctor for doctor in self.doctors if day in doctor.night_availability]
+        night_available = [doctor for doctor in self.doctors if day in doctor.night_availability]
 
-        return available, night_avaible
+        if shift_type == "daily":
+            return available
+        else:
+            return night_available
 
     def priorizer(self, available, current_day):
         '''Metodo interno que, tendo a lista de medicos disponiveis e o dia, manipula dados
@@ -40,8 +43,7 @@ class Shift():
             else:
                 nights_left = len([day for day in doctor.night_availability if day >= current_day])
             shifts_left = days_left+nights_left
-
-            doctor._priority_factor = 1/(shifts_left/10 + doctor.shift_count)
+            doctor._priority_factor = 1/(shifts_left + doctor.shift_count)
 
             if doctor.shift_count >= ideal_shifts:
                 doctor._priority_factor = doctor.priority_factor * 0.0001
@@ -56,72 +58,56 @@ class Shift():
 
         return([priority_factor, priority_list])
 
-    def selector(self, day):
+    def selector(self, day, shift_type):
         '''Metodo interno que, tendo a disponibilidade, numero de turnos do dia, fator de prioridade da
         rodada, e a lista com os fatores de prioridade dos medicos disponiveis, embaralha a lista de
         disponibilidade para garantir resultados diferentes a cada iteração, e seleciona os medicos
         que tenham prioridade igual ao maximo da lista'''
 
-        available, nigth_available = self.availability_filter(day)
+        available = self.availability_filter(day, shift_type)
 
-        day_priority, day_priority_list = self.priorizer(available, day)
-        night_priority, night_priority_list = self.priorizer(nigth_available, day)
-        
-        priority_list = [day_priority_list, night_priority_list]
-        priority_factor = [day_priority, night_priority]
-        availability = [available, nigth_available]
-        doctors_per_turn = [self.doctors_per_day, self.doctors_per_night]
-        shift_selected = []
+        if shift_type == "daily":
+            doctors_qtd = self.doctors_per_day
+        else:
+            doctors_qtd = self.doctors_per_night
+        priority_factor, priority_list = self.priorizer(available, day)
 
-        for turn in availability:
-            selected = []
-            index = availability.index(turn)
-            if turn != [] and doctors_per_turn[index] != 0:
-                rnd.shuffle(turn)
+        selected = []
+        if available != [] and doctors_qtd != 0:
+            rnd.shuffle(available)
 
-                while len(selected) != doctors_per_turn[index]:
+            while len(selected) != doctors_qtd:
 
-                    for doctor in turn:
-                        if doctors_per_turn[index] != len(selected) and (
-                            doctor.is_valid(priority_factor[index], selected)):
-                            
-                            selected.append(doctor)
-                            doctor.add_day()
-                            doctor.history_add(day) 
-                            doctor.increment()
+                for doctor in available:
+                    if doctors_qtd != len(selected) and (
+                        doctor.is_valid(priority_factor, selected)):
+                        
+                        selected.append(doctor)
+                        doctor.add_day()
+                        doctor.history_add(day) 
+                        doctor.increment()
 
-                    if len(selected) == doctors_per_turn[index]:
-                        shift_selected.append(selected)
+                if len(selected) == doctors_qtd:
+                    return selected
 
-                    else:
-                        priority_list[index] = list(
-                            filter(lambda x: x !=  priority_factor[index], priority_list[index])
-                            )
+                else:
+                    priority_list = list(
+                        filter(lambda x: x !=  priority_factor, priority_list)
+                        )
 
-                        if len(priority_list[index]) != 0:
-                            priority_factor[index] = max(priority_list[index])
-                        else:
-                            selected.append('Plantonistas Insuficientes')
-
-                            if len(selected) == doctors_per_turn[index]:
-                                shift_selected.append(selected)
-            else:
-                
-                while len(selected) != doctors_per_turn[index]:
-                    if self.doctors_per_night == 0:
-                        selected.append(['Sem plantao noturno'])
+                    if len(priority_list) != 0:
+                        priority_factor = max(priority_list)
                     else:
                         selected.append('Plantonistas Insuficientes')
 
-                shift_selected.append(selected)
-        for doctor in self.doctors:
+                        if len(selected) == doctors_qtd:
+                            return selected
+        else:
+            
+            while len(selected) != doctors_qtd:
 
-            if shift_selected[1] != 'Sem plantao noturno' and doctor not in shift_selected[1]:
-                doctor.zero_consec()
-            elif shift_selected[1] == 'Sem plantao noturno' and doctor not in shift_selected[0]:
-                doctor.zero_consec()
-
-        return shift_selected
+                selected.append('Plantonistas Insuficientes')
+            return selected
 
     def create_shift(self):
         '''Metodo interno que liga os outros metodos da classe, para calcular um plantao aleatorio que atenda
@@ -132,18 +118,20 @@ class Shift():
             doctor.setup()
 
         shift = []
-        days_list = self.days
 
-        for day in days_list:
-            if days_list[days_list.index(day)-1] != day-1:
+        for day in self.days:
+            if self.days[self.days.index(day)-1] != day-1:
                 for doctor in self.doctors:
                     doctor.zero_consec()
 
-            shift_selected = self.selector(day)
+            shift_selected = self.selector(day, "daily")
+            if self.doctors_per_night >= 0:
+                night_shift_selected = self.selector(day, "night")
+            shift_types = [shift_selected, night_shift_selected]
 
             day_shift = [day]
 
-            for i in shift_selected:
+            for i in shift_types:
                 for doctor in i:
                     if hasattr(doctor, 'name'):
                         aux = doctor.name
@@ -152,7 +140,12 @@ class Shift():
                     day_shift.append(aux)
 
             shift.append(day_shift)
-                    
+            for doctor in self.doctors:
+
+                if shift_types[1] != [] and doctor not in shift_types[1]:
+                    doctor.zero_consec()
+                else:
+                    doctor.zero_consec()
         return shift
 
     def best_shift(self, number_of_iteractions):
@@ -219,13 +212,11 @@ class Shift():
         '''Metodo interno utilizado para printar um turno de maneira organizada no terminal, cria um
         Pandas DataFrrame com o resultado e o retorna'''
 
-        days_list = self.days
-
-        shift_data = {'Dia': days_list}
+        shift_data = {'Dia': self.days}
         
         for doctor in range(self.doctors_per_day):
             doctor_list = []
-            for day in range(len(days_list)):
+            for day in range(len(self.days)):
                 try:
                     doctor_list.append(shift[day][doctor + 1])
                 except:
@@ -234,7 +225,7 @@ class Shift():
 
         for doctor in range(self.doctors_per_night):
             doctor_list = []
-            for day in range(len(days_list)):
+            for day in range(len(self.days)):
                 try:
                     doctor_list.append(shift[day][doctor + 1 + self.doctors_per_day])
                 except:

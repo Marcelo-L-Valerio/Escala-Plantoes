@@ -1,6 +1,6 @@
 
 import pandas as pd
-from business.doctors_list_generator import excel_list, random_list
+from business.doctors_list_generator import excel_list
 
 
 def import_data(nome_da_planilha: str):
