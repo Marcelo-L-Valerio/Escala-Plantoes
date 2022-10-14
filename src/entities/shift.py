@@ -6,13 +6,15 @@ from tabulate import tabulate
 
 class Shift():
 
-    def __init__(self, nome: str, month_days: list, doctors: list, doctors_per_day: int, doctors_per_night: int, local: str) -> None:
+    def __init__(self, nome: str, month_days: list, doctors: list, doctors_per_day: int, doctors_per_night: int, local: str, accuracy: float = 1) -> None:
         self.nome: str = nome
         self.days: list = month_days
         self.doctors: list = doctors
         self.doctors_per_day: int = doctors_per_day
         self.doctors_per_night: int = doctors_per_night
         self.local: str = local
+        self.accuracy_factor:float = accuracy
+        self.pontuation: int = 0
 
     def availability_filter(self, day, shift_type):
         '''Metodo interno que, tendo o dia pedido, filtra na lista de médicos
@@ -43,10 +45,10 @@ class Shift():
             else:
                 nights_left = len([day for day in doctor.night_availability if day >= current_day])
             shifts_left = days_left+nights_left
-            doctor._priority_factor = 1/(shifts_left + doctor.shift_count)
+            doctor._priority_factor = 1/(shifts_left/2 + doctor.shift_count)
 
             if doctor.shift_count >= ideal_shifts:
-                doctor._priority_factor = doctor.priority_factor * 0.0001
+                doctor._priority_factor = doctor.priority_factor * 0.01
 
             priority_list.append(doctor.priority_factor)
         
@@ -80,7 +82,7 @@ class Shift():
 
                 for doctor in available:
                     if doctors_qtd != len(selected) and (
-                        doctor.is_valid(priority_factor, selected)):
+                        doctor.is_valid(priority_factor, selected, self.accuracy_factor)):
                         
                         selected.append(doctor)
                         doctor.add_day()
@@ -148,65 +150,106 @@ class Shift():
                     doctor.zero_consec()
         return shift
 
-    def best_shift(self, number_of_iteractions):
-        '''Metodo externo da classe, que define o numero n de iterações desejadas, gera n turnos, e depois compara
-        esses turnos entre si para retornar a, ou uma das melhores combinações, geradas combinadas com a 
-        aleatoriedade, priorizando primeiramente os turnos com menos dias sem plantonistas, e depois os turnos
-        com uma melhor distribuição (menor desvio padrão) de turnos entre os médicos, e então o imprime e retorna'''
+    def create_shift_list(self, number_of_iteractions):
+        '''Metodo interno da classe, que, dada o numero de iterações, gera uma lista de n turnos, e retorna uma lista
+        de turnos, no formato de dicionarios, com dados como o turno bruto, contagem de plantoes vazios e outros, retorna
+        a distribuicao minima do conjunto (menor desvio padrao), e os turnos com maior numero de plantoes preenchidos.'''
 
         shift_list = []
         std_list = []
         empty_shifts_list = []
+        graduated_list = []
+        pontuation_list = []
 
         for i in range(number_of_iteractions):
             shift_count_list = []
             shift = self.create_shift()
 
-            for doctor in self.doctors:
-                shift_count_list.append(doctor.shift_count)
-
             empty_shifts = []
             for day in shift:
                 empty_shifts.append(day.count('Plantonistas Insuficientes'))
 
-            empty_shifts_list.append(sum(empty_shifts))
-            shift_list.append(shift)
-            std_list.append(stt.pstdev(shift_count_list))
+            docs_dict = {}
+            for doctor in self.doctors:
+
+                shift_count_list.append(doctor.shift_count)
+                graduated_list.append(doctor.graduated_from)
+                docs_dict[doctor.name] = doctor.shift_count
+
+            pontuation = self.shift_pontuator(graduated_list, docs_dict)
+            if sum(empty_shifts) != 0:
+                pontuation = pontuation/sum(empty_shifts)
+
+            pontuation_list.append(pontuation)
+
+            shift_dict = {
+                'shift': shift,
+                'std': stt.pstdev(shift_count_list),
+                'shift_count': docs_dict,
+                'empty_shifts': sum(empty_shifts),
+                'pontuation': pontuation
+            }
+            shift_list.append(shift_dict)
+            empty_shifts_list.append(shift_dict['empty_shifts'])
+            std_list.append(shift_dict['std'])
+
         empty_shifts_min = min(empty_shifts_list)
-        useless_shifts = []
-
-        for i in range(number_of_iteractions):
-
-            if empty_shifts_list[i] != empty_shifts_min:
-                useless_shifts.append(i)
-        useless_shifts.reverse()
-
-        for i in useless_shifts:
-            shift_list.pop(i)
-            std_list.pop(i)
-
         std_min = min(std_list)
+        max_pontuation = max(pontuation_list)
         
-        for i in range(len(shift_list)):
+        return (shift_list, empty_shifts_min, std_min, max_pontuation)
 
-            if std_list[i] == std_min:
+    def shift_pontuator(self, graduated_list, docs_dict):
+        '''Metodo interno, que calcula a pontuacao do turno, com base no numero de turno dos medicos mais prestigiados, como os com
+        mais tempo de formado, o fato de o medico ser ou nao do hospital, e dele ser ou nao especialista, por exemplo'''
 
-                name_list = ['Desvio Padrao']
-                count_list = [std_list[i]]
-                shift_df = self.print_shift(shift_list[i])
+        graduated_list.sort()
+        sorted_list = list(set(graduated_list))
+        pontuation = 0
 
-                for doctor in self.doctors:
-                    name_list.append(doctor.name)
-                    aux = []
-                    for day in range(len(self.days)):
-                        aux.append(shift_list[i][day].count(doctor.name))
-                    count_list.append(sum(aux))
+        for doctor in self.doctors:
+            if doctor.is_from_hospital == True:
+                pontuation += 100 * docs_dict[doctor.name]
 
-                final_list = [name_list, count_list]
-                std_df = pd.DataFrame(final_list)
-                print(tabulate(std_df, tablefmt='fancy_grid', showindex=False))
+            for i in range(len(sorted_list)):
 
-                return shift_df, std_df
+                if doctor.graduated_from == sorted_list[-1 -(1 * i)]:
+                    pontuation += 150/(i+1) * (len(sorted_list) - i) * docs_dict[doctor.name]
+
+        return pontuation
+
+    def best_shift(self, number_of_iteractions):
+        '''Metodo externo da classe, que define o numero n de iterações desejadas, compara os turnos de uma dada lista
+        entre si para retornar a, ou uma das melhores combinações, geradas combinadas com a aleatoriedade, priorizando
+        primeiramente os turnos com menos dias sem plantonistas, e depois os turnos com uma melhor distribuição 
+        (menor desvio padrão) de turnos entre os médicos, e então o imprime e retorna'''
+
+        shift_list, empty_shifts_min, std_min, max_pontuation = self.create_shift_list(number_of_iteractions)
+
+        for shift in range(len(shift_list)-1, -1, -1):
+
+            if shift_list[shift]['empty_shifts'] != empty_shifts_min:
+                shift_list.pop(shift)
+            elif shift_list[shift]['std'] != std_min:
+                shift_list.pop(shift)
+            elif shift_list[shift]['pontuation'] != max_pontuation:
+                shift_list.pop(shift)
+
+        for shift in shift_list:
+
+            name_list = ['Desvio Padrao', 'Pontuação']
+            count_list = [shift['std'], shift['pontuation']]
+            shift_df = self.print_shift(shift['shift'])
+
+            for doctor in shift['shift_count'].keys():
+                name_list.append(doctor)
+                count_list.append(shift['shift_count'][doctor])
+
+            final_list = [name_list, count_list]
+            std_df = pd.DataFrame(final_list)
+            print(tabulate(std_df, tablefmt='fancy_grid', showindex=False))
+
+            return shift_df, std_df
 
     def print_shift(self, shift):
         '''Metodo interno utilizado para printar um turno de maneira organizada no terminal, cria um

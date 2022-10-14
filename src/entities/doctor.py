@@ -1,7 +1,7 @@
 
 class Doctor():
 
-    def __init__(self, name: str, avaible_days: list, avaible_nights: list) -> None:
+    def __init__(self, name: str, avaible_days: list, avaible_nights: list, is_from_hospital: bool, graduated_from: int) -> None:
         self.name: str = name
         self.__availability: list = avaible_days
         self.__night_availability= avaible_nights
@@ -9,6 +9,8 @@ class Doctor():
         self._priority_factor: int = 0
         self.__history: list = []
         self.__consecutive_shifts: int = 0
+        self.__is_from_hospital: bool = is_from_hospital
+        self.__graduated_from: int = graduated_from
 
     @property
     def shift_count(self) -> str:
@@ -34,6 +36,14 @@ class Doctor():
     def consecutive_shifts(self) -> str:
         return self.__consecutive_shifts
 
+    @property
+    def is_from_hospital(self) -> str:
+        return self.__is_from_hospital
+
+    @property
+    def graduated_from(self) -> str:
+        return self.__graduated_from
+
     def increment(self):
         self.__shift_count += 1
 
@@ -51,8 +61,9 @@ class Doctor():
         self.__history = []
         self.__shift_count = 0
 
-    def is_valid(self, priority_factor, selected):
-        if self.__consecutive_shifts < 2 and self._priority_factor == priority_factor:
+    def is_valid(self, priority_factor, selected, accuracy_factor):
+        if self.__consecutive_shifts < 2 and (
+            priority_factor * accuracy_factor <= self._priority_factor <= priority_factor):
             if self not in selected:
                 return True
         else:

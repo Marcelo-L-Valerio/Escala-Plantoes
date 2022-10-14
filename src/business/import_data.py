@@ -15,7 +15,8 @@ def import_data(nome_da_planilha: str):
     plantonistas_noite = int(dados['Plantonistas noite'][0])
     n_opcoes = int(dados['N de opções'][0])
     local = str(dados['Local'][0])
+    precisao = float(dados['Precisão'][0])
 
-    results = [ nome, dias, lista_medicos, plantonistas_dia, plantonistas_noite, local, n_opcoes]
+    results = [ nome, dias, lista_medicos, plantonistas_dia, plantonistas_noite, local, precisao, n_opcoes]
 
     return results

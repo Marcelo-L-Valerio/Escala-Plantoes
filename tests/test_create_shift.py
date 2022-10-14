@@ -6,8 +6,8 @@ class test_create_shift(unittest.TestCase):
     
     def setUp(self) -> None:
 
-        self.doc1 = Doctor('Marcelo', [1, 3, 5], [5])
-        self.doc2 = Doctor('Jonas', [1], [1, 3, 5])
+        self.doc1 = Doctor('Marcelo', [1, 3, 5], [5], True, 3)
+        self.doc2 = Doctor('Jonas', [1], [1, 3, 5], True, 3)
 
         self.shift = Shift('Turno teste', [1, 3, 5], [self.doc1, self. doc2], 1, 1, 'Hospital teste')
         #Para testar esse algoritmo pseudo-aleatorio, serão testados os pontos-chave, que possuem solução

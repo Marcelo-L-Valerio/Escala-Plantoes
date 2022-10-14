@@ -30,13 +30,15 @@ def excel_list(nome_planilha:str):
 
     dias = []
     lista_medicos = []
-    for i in range(1, len(medicos.columns)):
+    for i in range(1, len(medicos.columns) - 2):
         dias.append(int(medicos.columns[i]))
 
     for medico in range(tamanho[0]):
         nome = str(medicos['Nome'][medico])
         dias_disponivel = []
         noites_disponivel = []
+        do_hospital = bool(medicos['é do hospital'][medico] == 'Sim') 
+        graduado_a = int(medicos['graduado há'][medico])
 
         for dia in dias:
             if medicos[f'{dia}'][medico] == 'D':
@@ -44,6 +46,6 @@ def excel_list(nome_planilha:str):
             if noturnos[f'{dia}'][medico] == 'D':
                 noites_disponivel.append(dia)
             
-        lista_medicos.append(Doctor(nome, dias_disponivel, noites_disponivel))
+        lista_medicos.append(Doctor(nome, dias_disponivel, noites_disponivel, do_hospital, graduado_a))
 
     return lista_medicos, dias
