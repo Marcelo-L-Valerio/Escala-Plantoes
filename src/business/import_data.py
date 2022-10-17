@@ -6,7 +6,7 @@ from business.doctors_list_generator import excel_list
 def import_data(nome_da_planilha: str):
     '''Dado o nome da planilha, importa todos os dados sobre o turno e os médicos, e retorna no formato de uma
     lista de resultados'''
-    dados = pd.read_excel(nome_da_planilha, sheet_name="Dados")
+    dados = pd.read_excel(nome_da_planilha, sheet_name="Dados_gerais")
 
     lista_medicos, dias = excel_list(nome_da_planilha)
 

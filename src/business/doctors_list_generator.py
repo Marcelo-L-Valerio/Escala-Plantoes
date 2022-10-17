@@ -26,19 +26,21 @@ def excel_list(nome_planilha:str):
 
     medicos = pd.read_excel(nome_planilha, sheet_name="Medicos_diarista")
     noturnos = pd.read_excel(nome_planilha, sheet_name="Medicos_noturno")
+    dados_medicos = pd.read_excel(nome_planilha, sheet_name="Dados_medicos")
     tamanho = medicos.shape
 
     dias = []
     lista_medicos = []
-    for i in range(1, len(medicos.columns) - 2):
+    for i in range(1, len(medicos.columns)):
         dias.append(int(medicos.columns[i]))
 
     for medico in range(tamanho[0]):
         nome = str(medicos['Nome'][medico])
         dias_disponivel = []
         noites_disponivel = []
-        do_hospital = bool(medicos['é do hospital'][medico] == 'Sim') 
-        graduado_a = int(medicos['graduado há'][medico])
+        do_hospital = bool(dados_medicos['é do hospital'][medico] == 'Sim') 
+        graduado_a = int(dados_medicos['graduado há'][medico])
+        eh_especialista = bool(dados_medicos['é especialista'][medico] == 'Sim') 
 
         for dia in dias:
             if medicos[f'{dia}'][medico] == 'D':
@@ -46,6 +48,6 @@ def excel_list(nome_planilha:str):
             if noturnos[f'{dia}'][medico] == 'D':
                 noites_disponivel.append(dia)
             
-        lista_medicos.append(Doctor(nome, dias_disponivel, noites_disponivel, do_hospital, graduado_a))
+        lista_medicos.append(Doctor(nome, dias_disponivel, noites_disponivel, do_hospital, graduado_a, eh_especialista))
 
     return lista_medicos, dias

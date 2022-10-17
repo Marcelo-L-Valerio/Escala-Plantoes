@@ -1,7 +1,7 @@
 
 class Doctor():
 
-    def __init__(self, name: str, avaible_days: list, avaible_nights: list, is_from_hospital: bool, graduated_from: int) -> None:
+    def __init__(self, name: str, avaible_days: list, avaible_nights: list, is_from_hospital: bool, graduated_from: int, is_spceialist: bool) -> None:
         self.name: str = name
         self.__availability: list = avaible_days
         self.__night_availability= avaible_nights
@@ -11,6 +11,7 @@ class Doctor():
         self.__consecutive_shifts: int = 0
         self.__is_from_hospital: bool = is_from_hospital
         self.__graduated_from: int = graduated_from
+        self.__is_spceialist: bool = is_spceialist
 
     @property
     def shift_count(self) -> str:
@@ -44,6 +45,10 @@ class Doctor():
     def graduated_from(self) -> str:
         return self.__graduated_from
 
+    @property
+    def is_spceialist(self) -> str:
+        return self.__is_spceialist
+
     def increment(self):
         self.__shift_count += 1
 
@@ -68,3 +73,17 @@ class Doctor():
                 return True
         else:
             return False
+
+    def pontuation(self, graduated_years_list, pontuation):
+
+        if self.is_from_hospital == True:
+            pontuation += 200 * self.shift_count
+
+        if self.is_spceialist == True:
+            pontuation += 100 * self.shift_count
+
+        for i in range(len(graduated_years_list)):
+
+            if self.graduated_from == graduated_years_list[-1 -(1 * i)]:
+                pontuation += 100/(i+1) * self.shift_count
+                return pontuation

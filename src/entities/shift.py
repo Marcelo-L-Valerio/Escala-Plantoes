@@ -176,7 +176,7 @@ class Shift():
                 graduated_list.append(doctor.graduated_from)
                 docs_dict[doctor.name] = doctor.shift_count
 
-            pontuation = self.shift_pontuator(graduated_list, docs_dict)
+            pontuation = self.shift_pontuator(graduated_list)
             if sum(empty_shifts) != 0:
                 pontuation = pontuation/sum(empty_shifts)
 
@@ -199,7 +199,7 @@ class Shift():
         
         return (shift_list, empty_shifts_min, std_min, max_pontuation)
 
-    def shift_pontuator(self, graduated_list, docs_dict):
+    def shift_pontuator(self, graduated_list):
         '''Metodo interno, que calcula a pontuacao do turno, com base no numero de turno dos medicos mais prestigiados, como os com
         mais tempo de formado, o fato de o medico ser ou nao do hospital, e dele ser ou nao especialista, por exemplo'''
 
@@ -208,13 +208,8 @@ class Shift():
         pontuation = 0
 
         for doctor in self.doctors:
-            if doctor.is_from_hospital == True:
-                pontuation += 100 * docs_dict[doctor.name]
-
-            for i in range(len(sorted_list)):
-
-                if doctor.graduated_from == sorted_list[-1 -(1 * i)]:
-                    pontuation += 150/(i+1) * (len(sorted_list) - i) * docs_dict[doctor.name]
+            
+            pontuation = doctor.pontuation(sorted_list, pontuation)
 
         return pontuation
 
