@@ -3,7 +3,7 @@ import pandas as pd
 from business.doctors_list_generator import excel_list
 
 
-def import_data(nome_da_planilha: str):
+def import_data(nome_da_planilha: str) -> list:
     '''Dado o nome da planilha, importa todos os dados sobre o turno e os médicos, e retorna no formato de uma
     lista de resultados'''
     dados = pd.read_excel(nome_da_planilha, sheet_name="Dados_gerais")
@@ -17,6 +17,6 @@ def import_data(nome_da_planilha: str):
     local = str(dados['Local'][0])
     precisao = float(dados['Precisão'][0])
 
-    results = [ nome, dias, lista_medicos, plantonistas_dia, plantonistas_noite, local, precisao, n_opcoes]
+    results = [nome, dias, lista_medicos, plantonistas_dia, plantonistas_noite, local, precisao, n_opcoes]
 
     return results

@@ -7,7 +7,7 @@ class test_create_shift(unittest.TestCase):
     def test_create_doctor(self):
 
         #given
-        doctor = Doctor('Marcelo', [1, 2], [1, 3], True, 3)
+        doctor = Doctor('Marcelo', [1, 2], [1, 3], True, 3, True)
 
         #then
         self.assertEqual(doctor.name, 'Marcelo')
@@ -17,7 +17,7 @@ class test_create_shift(unittest.TestCase):
     def test_class_count_methods(self):
 
         #given
-        doctor = Doctor('Marcelo', [1, 2], [1, 3], True, 3)
+        doctor = Doctor('Marcelo', [1, 2], [1, 3], True, 3, True)
 
         #when
         doctor.increment()
@@ -32,7 +32,7 @@ class test_create_shift(unittest.TestCase):
     def test_class_setup_methods(self):
 
         #given
-        doctor = Doctor('Marcelo', [1, 2], [1, 3], True, 3)
+        doctor = Doctor('Marcelo', [1, 2], [1, 3], True, 3, True)
         doctor.increment()
         doctor.add_day()
         doctor.history_add(2)
@@ -48,7 +48,7 @@ class test_create_shift(unittest.TestCase):
     def test_doctor_not_valid(self):
 
         #given
-        doctor = Doctor('Marcelo', [1, 2], [1, 3], True, 3)
+        doctor = Doctor('Marcelo', [1, 2], [1, 3], True, 3, True)
         doctor.add_day()
         doctor.add_day()
         doctor._priority_factor = 0.5
@@ -62,7 +62,7 @@ class test_create_shift(unittest.TestCase):
     def test_doctor_is_valid(self):
 
         #given
-        doctor = Doctor('Marcelo', [1, 2], [1, 3], True, 3)
+        doctor = Doctor('Marcelo', [1, 2], [1, 3], True, 3, True)
         doctor.add_day()
         doctor._priority_factor = 0.5
 

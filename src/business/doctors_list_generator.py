@@ -3,7 +3,7 @@ from entities.doctor import Doctor
 from random import choices
 import pandas as pd
 
-def random_list(number_of_doctors, days, days_avaible, nights_avaible):
+def random_list(number_of_doctors: int, days: int, days_avaible: int, nights_avaible: int) -> list:
     '''Gera uma lista aleatoria de médicos, tendo como parâmetros a quantidade de médicos desejada, a lista
     de dias, quantos dias cada médico terá disponivel, e quantas noites disponíveis (dias selecionados
     aleatoriamente da lista de dias fornecida, diferente para cada médico)'''
@@ -20,7 +20,7 @@ def random_list(number_of_doctors, days, days_avaible, nights_avaible):
 
     return doctors
 
-def excel_list(nome_planilha:str):
+def excel_list(nome_planilha:str) -> tuple[list, int]:
     '''Dado o nome da planilha, importa os dias e noites disponíveis de cada médico, formata os dados, e cria uma
     lista de médicos a partir deles, retorna a lista de médicos, e os dias do mês que terá plantões'''
 

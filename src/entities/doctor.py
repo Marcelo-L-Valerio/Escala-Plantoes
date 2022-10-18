@@ -66,7 +66,9 @@ class Doctor():
         self.__history = []
         self.__shift_count = 0
 
-    def is_valid(self, priority_factor, selected, accuracy_factor):
+    def is_valid(self, priority_factor: int, selected: list, accuracy_factor: float) -> bool:
+        '''Metodo externo da classe Doctor que retorna se o mesmo é elegível para um turno, com base numa série
+        de validacoes.'''
         if self.__consecutive_shifts < 2 and (
             priority_factor * accuracy_factor <= self._priority_factor <= priority_factor):
             if self not in selected:
@@ -74,7 +76,9 @@ class Doctor():
         else:
             return False
 
-    def pontuation(self, graduated_years_list, pontuation):
+    def pontuation(self, graduated_years_list: list, pontuation: float) -> float:
+        '''Metodo externo da classe Doctor, que calcula a participacao do mesmo na pontuacao do turno, com base em
+        fatores como o mesmo ser ou nao do hospital, e o numero de turnos do mesmo.'''
 
         if self.is_from_hospital == True:
             pontuation += 200 * self.shift_count
