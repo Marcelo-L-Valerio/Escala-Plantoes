@@ -1,6 +1,6 @@
 
 import pandas as pd
-
+from business.shift_selector import best_shift
 
 def multi_shift_generator(shift, shift_quantity: int) -> list:
     '''Dados o turno e a quantidade de opções de turno desejada, printa no terminal, e também salva num 
@@ -10,7 +10,7 @@ def multi_shift_generator(shift, shift_quantity: int) -> list:
     while len(lista_turnos) < shift_quantity:
         div = '='
         print(f'\n\n {50*div} Turnos de {shift.nome}, em {shift.local}, opção {len(lista_turnos) + 1} {50*div}\n')
-        turno, outros_dados = shift.best_shift(1000)
+        turno, outros_dados = best_shift(1000, shift)
         lista_turnos.append(turno)
         if len(lista_turnos) == 1:
             engine = 'xlsxwriter'
