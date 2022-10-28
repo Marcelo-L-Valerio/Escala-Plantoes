@@ -1,7 +1,7 @@
 
 class Doctor():
 
-    def __init__(self, name: str, avaible_days: list, avaible_nights: list, is_from_hospital: bool, graduated_from: int, is_spceialist: bool) -> None:
+    def __init__(self, name: str, avaible_days: list, avaible_nights: list, is_from_hospital: bool, graduated_from: int, is_spceialist: bool, only_diarist: bool) -> None:
         self.name: str = name
         self.__availability: list = avaible_days
         self.__night_availability= avaible_nights
@@ -12,6 +12,7 @@ class Doctor():
         self.__is_from_hospital: bool = is_from_hospital
         self.__graduated_from: int = graduated_from
         self.__is_spceialist: bool = is_spceialist
+        self.__only_diarist: bool = only_diarist
 
     @property
     def shift_count(self) -> str:
@@ -49,6 +50,13 @@ class Doctor():
     def is_spceialist(self) -> str:
         return self.__is_spceialist
 
+    @property
+    def only_diarist(self) -> str:
+        return self.__only_diarist
+
+    def __str__(self) -> str:
+        return self.name
+
     def increment(self):
         self.__shift_count += 1
 
@@ -76,18 +84,35 @@ class Doctor():
         else:
             return False
 
-    def pontuation(self, graduated_years_list: list, pontuation: float) -> float:
+    def pontuation(self, graduated_years_list: list) -> float:
         '''Metodo externo da classe Doctor, que calcula a participacao do mesmo na pontuacao do turno, com base em
         fatores como o mesmo ser ou nao do hospital, e o numero de turnos do mesmo.'''
 
+        pontuation = 0
         if self.is_from_hospital == True:
             pontuation += 200 * self.shift_count
 
         if self.is_spceialist == True:
             pontuation += 100 * self.shift_count
 
+        pontuation += 15 * (len(self.availability)+len(self.night_availability))
+
         for i in range(len(graduated_years_list)):
 
             if self.graduated_from == graduated_years_list[-1 -(1 * i)]:
-                pontuation += 100/(i+1) * self.shift_count
+                pontuation += int(300/(i+1)) * self.shift_count
                 return pontuation
+
+    def diarist_priority(self, garduated_year_list: list, total_days: int):
+        '''define a prioridade do médico como diarista, de acordo com suas qualificacoes'''
+
+        priority = 0
+        if self.only_diarist == True:
+            priority += 300
+
+        pontuation = self.pontuation(garduated_year_list)
+        if pontuation >= 300 + (total_days*15)/2:
+            priority += pontuation*1.5
+        else:
+            priority =+ pontuation
+        return priority

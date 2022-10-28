@@ -11,12 +11,13 @@ def import_data(nome_da_planilha: str) -> list:
     lista_medicos, dias = excel_list(nome_da_planilha)
 
     nome = str(dados['Mês'][0])
+    diaristas = int(dados['Diaristas'][0])
     plantonistas_dia = int(dados['Plantonistas dia'][0])
     plantonistas_noite = int(dados['Plantonistas noite'][0])
     n_opcoes = int(dados['N de opções'][0])
     local = str(dados['Local'][0])
     precisao = float(dados['Precisão'][0])
 
-    results = [nome, dias, lista_medicos, plantonistas_dia, plantonistas_noite, local, precisao, n_opcoes]
+    results = [nome, dias, lista_medicos, diaristas, plantonistas_dia, plantonistas_noite, local, precisao, n_opcoes]
 
     return results

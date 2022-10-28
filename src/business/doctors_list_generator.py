@@ -1,24 +1,6 @@
 
 from entities.doctor import Doctor
-from random import choices
 import pandas as pd
-
-def random_list(number_of_doctors: int, days: int, days_avaible: int, nights_avaible: int) -> list:
-    '''Gera uma lista aleatoria de médicos, tendo como parâmetros a quantidade de médicos desejada, a lista
-    de dias, quantos dias cada médico terá disponivel, e quantas noites disponíveis (dias selecionados
-    aleatoriamente da lista de dias fornecida, diferente para cada médico)'''
-
-    doctors = []
-    name_list = ['Marcelo', 'Renan', 'Eduardo', 'Bruno', 'Barbara', 'Jonas', 'Joao', 'Andre', 'Julia', 'Ronaldo', 'Ricardo', 'Ana', 'Isa', 'Carlos', 'Paula', 'Maria', 'Roberto', 'Zoro', 'Mateus', 'Jorge', 'Marilia', 'Simone', 'Jonathan', 'Giovana', 'Bia']
-
-    for i in range(number_of_doctors):
-        name = name_list[i]
-        availability = choices(days, k=days_avaible)
-        night_availability = choices(days, k=nights_avaible)
-        i = Doctor(name, availability, night_availability)
-        doctors.append(i)
-
-    return doctors
 
 def excel_list(nome_planilha:str) -> tuple[list, int]:
     '''Dado o nome da planilha, importa os dias e noites disponíveis de cada médico, formata os dados, e cria uma
@@ -40,7 +22,8 @@ def excel_list(nome_planilha:str) -> tuple[list, int]:
         noites_disponivel = []
         do_hospital = bool(dados_medicos['é do hospital'][medico] == 'Sim') 
         graduado_a = int(dados_medicos['graduado há'][medico])
-        eh_especialista = bool(dados_medicos['é especialista'][medico] == 'Sim') 
+        eh_especialista = bool(dados_medicos['é especialista'][medico] == 'Sim')
+        so_diarista = bool(dados_medicos['só diarista'][medico] == 'Sim')
 
         for dia in dias:
             if medicos[f'{dia}'][medico] == 'D':
@@ -48,6 +31,6 @@ def excel_list(nome_planilha:str) -> tuple[list, int]:
             if noturnos[f'{dia}'][medico] == 'D':
                 noites_disponivel.append(dia)
             
-        lista_medicos.append(Doctor(nome, dias_disponivel, noites_disponivel, do_hospital, graduado_a, eh_especialista))
+        lista_medicos.append(Doctor(nome, dias_disponivel, noites_disponivel, do_hospital, graduado_a, eh_especialista, so_diarista))
 
     return lista_medicos, dias
