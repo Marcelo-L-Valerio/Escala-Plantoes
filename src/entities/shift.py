@@ -5,7 +5,7 @@ from tabulate import tabulate
 
 class Shift():
 
-    def __init__(self, name: str, month_days: list, doctors: list, diarists: int, plantonists: int, doctors_per_night: int, local: str, accuracy: float = 1) -> None:
+    def __init__(self, name: str, month_days: list, doctors: list, diarists: int, plantonists: int, doctors_per_night: int, local: str) -> None:
         self.name: str = name
         self.days: list = month_days
         self.doctors: list = doctors
@@ -14,7 +14,7 @@ class Shift():
         self.doctors_per_day: int = plantonists + diarists
         self.doctors_per_night: int = doctors_per_night
         self.local: str = local
-        self.accuracy_factor:float = accuracy
+        
         self.pontuation: int = 0
         self.shift_data:list = []
         self.std:float = 0
@@ -93,8 +93,7 @@ class Shift():
 
                 for doctor in available:
                     if doctors_qtd != len(selected) and (
-                        doctor.is_valid(priority_factor, selected, self.accuracy_factor)):
-                        
+                        doctor.is_valid(priority_factor, selected)):
                         selected.append(doctor)
                         doctor.add_day()
                         doctor.history_add(day) 
@@ -112,8 +111,8 @@ class Shift():
                         continue
             
         while len(selected) != doctors_qtd:
-
             selected.append('Plantonistas Insuficientes')
+            
         return selected
 
     def create_shift(self) -> list:
@@ -142,6 +141,7 @@ class Shift():
             shift_selected = self.selector(day, "daily")
             if self.doctors_per_night >= 0:
                 night_shift_selected = self.selector(day, "night")
+            else: night_shift_selected = []
             shift_types = [shift_selected, night_shift_selected]
 
             day_shift = [day]
@@ -181,7 +181,7 @@ class Shift():
                 if type(day[doctor]) != str and day[doctor].only_diarist == False:
                     pontuation += 150
                 else:
-                    pontuation -= 150
+                    pontuation -= 300
         self.pontuation = pontuation   
 
         return None
@@ -227,11 +227,11 @@ class Shift():
 
         self.days.sort()
         shift_data = {'Dia': self.days}
-        shift_types_desc = ['Diarista', 'Plantonista', 'Plantonista Noturno']
-        shift_types_atributes = [self.diarists, self.plantonists, self.doctors_per_night]
+        shift_types_name = ['Diarista', 'Plantonista', 'Plantonista Noturno']
+        shift_types_doctors = [self.diarists, self.plantonists, self.doctors_per_night]
         position_in_shift = [0, self.diarists, self.doctors_per_day] #posição do médico na lista "shift"
         
-        for index, plantonist_type in enumerate(shift_types_atributes):
+        for index, plantonist_type in enumerate(shift_types_doctors):
             for doctor in range(plantonist_type):
                 doctor_list = []
                 for day in range(len(self.days)):
@@ -240,7 +240,7 @@ class Shift():
                     except:
                         doctor_list.append('Plantonistas Insuficientes')
 
-                shift_data[f'{doctor+1}° {shift_types_desc[index]}'] = doctor_list
+                shift_data[f'{doctor+1}° {shift_types_name[index]}'] = doctor_list
 
         df = pd.DataFrame(shift_data)
         print(tabulate(df,  headers='keys', tablefmt='fancy_grid', showindex=False))

@@ -74,11 +74,11 @@ class Doctor():
         self.__history = []
         self.__shift_count = 0
 
-    def is_valid(self, priority_factor: int, selected: list, accuracy_factor: float) -> bool:
+    def is_valid(self, priority_factor: int, selected: list) -> bool:
         '''Metodo externo da classe Doctor que retorna se o mesmo é elegível para um turno, com base numa série
         de validacoes.'''
         if self.__consecutive_shifts < 2 and (
-            priority_factor * accuracy_factor <= self._priority_factor <= priority_factor):
+            priority_factor * 0.7 <= self._priority_factor <= priority_factor):
             if self not in selected:
                 return True
         else:

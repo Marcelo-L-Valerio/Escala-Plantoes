@@ -13,11 +13,10 @@ def create_shift_list(data: list) -> list:
 
     shift_list = []
 
-    for i in range(1000):
+    for i in range(data[7]):
 
-        shift = Shift(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7])
+        shift = Shift(data[0], data[1], data[2], data[3], data[4], data[5], data[6])
         shuffle(shift.doctors)
-        shift_count_list = []
         graduated_list = []
 
         if i%10 == 0:
@@ -34,11 +33,10 @@ def create_shift_list(data: list) -> list:
 
         docs_dict = {}
         for doctor in shift.doctors:
-
-            shift_count_list.append(doctor.shift_count)
             graduated_list.append(doctor.graduated_from)
             docs_dict[doctor.name] = doctor.shift_count
-        std = pstdev(shift_count_list)
+
+        std = pstdev(docs_dict.values())
         graduated_list.sort(reverse=True)
         sorted_list = list(set(graduated_list))
 
@@ -66,24 +64,19 @@ def best_shift(data: list) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     std_min = min(shift_list, key=lambda shift: shift.std).std
     empty_shifts_min = min(shift_list, key=lambda shift: shift.empty_shifts).empty_shifts
-    for shift in shift_list[::-1]:
 
-        if shift.empty_shifts != empty_shifts_min:
-            shift_list.remove(shift)
-        elif shift.std != std_min:
-            shift_list.remove(shift)
-        else:
-            if shift.empty_shifts != 0:
-                std_l = list(map(lambda x: x, shift.doctors_shift_count.values()))
-                shift.std = pstdev(std_l) ## retomando o valor original do desvio padrão
-                
-            shift.diarist_selector()
+    shift_list = [shift for shift in shift_list if 
+    (shift.empty_shifts == empty_shifts_min and shift.std == std_min)]
+
+    for shift in shift_list:
+        if shift.empty_shifts != 0:
+            std_l = list(map(lambda x: x, shift.doctors_shift_count.values()))
+            shift.std = pstdev(std_l) ## retomando o valor original do desvio padrão
+        shift.diarist_selector()
 
     max_pontuation = max(shift_list, key=lambda shift: shift.pontuation).pontuation
-    for shift in shift_list[::-1]:
-        
-        if shift.pontuation != max_pontuation:
-            shift_list.remove(shift)
+
+    shift_list = [shift for shift in shift_list if shift.pontuation == max_pontuation]
 
     for shift in shift_list:
 
